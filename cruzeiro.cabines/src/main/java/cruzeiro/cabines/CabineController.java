@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 public class CabineController {
 	@Value("${app.name}")
@@ -28,13 +27,13 @@ public class CabineController {
 
 	@Autowired
 	CabineDAO dao;
-	
+
 	@GetMapping("/obter")
 	public ResponseEntity<Iterable<CabineBean>> obterCabines(Integer id) {
 		return new ResponseEntity<Iterable<CabineBean>>(dao.findAll(), HttpStatus.OK);
 
 	}
-	
+
 	@GetMapping("/obter/{id}")
 	public ResponseEntity<CabineBean> obterCabineId(@PathVariable Integer id) {
 
@@ -42,19 +41,20 @@ public class CabineController {
 
 		if (ret.isPresent())
 			return new ResponseEntity<CabineBean>(ret.get(), HttpStatus.OK);
-		else 
+		else
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 	}
-	
+
 	@GetMapping("/atualizar/{id}/{maxPessoas}/{precoPessoa}")
-	public ResponseEntity<CabineBean> atualizarCabine(@PathVariable Integer id, @PathVariable Integer maxPessoas, @PathVariable Double precoPessoa) {
+	public ResponseEntity<CabineBean> atualizarCabine(@PathVariable Integer id, @PathVariable Integer maxPessoas,
+			@PathVariable Double precoPessoa) {
 		ResponseEntity<CabineBean> response = obterCabineId(id);
 
 		CabineBean cabine = response.getBody();
 		cabine.setMaxPessoas(maxPessoas);
 		cabine.setPrecoPessoa(precoPessoa);
-		
+
 		dao.save(cabine);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -71,19 +71,18 @@ public class CabineController {
 		return new ResponseEntity<>(HttpStatus.OK);
 
 	}
-	
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
 		Map<String, String> errors = new HashMap<String, String>();
-		
+
 		errors.put("codigo", "BAD");
-		
-		ex.getBindingResult().getFieldErrors().forEach(error ->
-		errors.put(error.getField(), error.getDefaultMessage()));
-		
+
+		ex.getBindingResult().getFieldErrors()
+				.forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+
 		return errors;
 	}
-	
+
 }
