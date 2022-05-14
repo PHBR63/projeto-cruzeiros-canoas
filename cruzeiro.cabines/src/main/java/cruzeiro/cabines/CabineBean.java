@@ -14,10 +14,10 @@ public class CabineBean {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int idCabine;
 	
-	@NotNull (message = "Informe o curso para o novo aluno")
+	@NotNull (message = "Informe o máximo de pessoas por cabine.")
 	private int maxPessoas;
 	
-	@NotNull (message = "Informe o curso para o novo aluno")
+	@NotNull (message = "Informe o preço por pessoa.")
 	private double precoPessoa;
 
 
