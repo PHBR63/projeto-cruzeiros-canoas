@@ -29,7 +29,7 @@ public class ReservaController {
 	public ResponseEntity<String> obterReserva(@PathVariable Integer totalPessoas,
 			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date data) {
 		//CONTINUA AQUI KRL
-		return new ResponseEntity<String>("F POrra", HttpStatus.OK);
+		return new ResponseEntity<String>("Funcionou caraio", HttpStatus.OK);
 
 	}
 
