@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import cruzeiro.cabines.CabineBean;
+
+import org.json.JSONObject;
 
 @RestController
 public class ReservaController {
@@ -25,14 +30,34 @@ public class ReservaController {
 	@Autowired
 	ReservaDAO dao;
 
+	private JSONObject getCabines() {
+	String uri = "http://localhost:8081/obter";
+	RestTemplate restTemplate = new RestTemplate();
+	String cabine = restTemplate.getForObject(uri, String.class);
+	JSONObject obj = new JSONObject(cabine);
+	return obj;
+	
+	}
+	
+	private ResponseEntity<Iterable<ReservaBean>> obterReservas() {
+		return new ResponseEntity<Iterable<ReservaBean>>(dao.findAll(), HttpStatus.OK);
+	}
+	
+	//Verificar qual a cabine que comporta o total de pessoas (sempre a menor que possa comportar o total de
+	//pessoas requerido) e se não está já reservada na data informada (integrar com o end point Cabine);
+	
 	@GetMapping("/reserva/{totalPessoas}/{data}")
 	public ResponseEntity<String> obterReserva(@PathVariable Integer totalPessoas,
 			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date data) {
-		//CONTINUA AQUI KRL
-		return new ResponseEntity<String>("Funcionou caraio", HttpStatus.OK);
-
+		
+		JSONObject cabines = getCabines();
+		ResponseEntity<Iterable<ReservaBean>> reservas = obterReservas();
+		
+		
+		return new ResponseEntity<Iterable<ReservaBean>>(dao.findAll(), HttpStatus.OK);
 	}
 
+	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
