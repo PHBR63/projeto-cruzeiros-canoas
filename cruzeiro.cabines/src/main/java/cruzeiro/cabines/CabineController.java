@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 public class CabineController {
 	@Value("${app.name}")
@@ -29,11 +30,11 @@ public class CabineController {
 	CabineDAO dao;
 
 	@GetMapping("/obter")
-	public ResponseEntity<Iterable<CabineBean>> obterCabines(Integer id) {
+	public ResponseEntity<Iterable<CabineBean>> obterCabines() {
 		return new ResponseEntity<Iterable<CabineBean>>(dao.findAll(), HttpStatus.OK);
 
 	}
-
+	
 	@GetMapping("/obter/{id}")
 	public ResponseEntity<CabineBean> obterCabineId(@PathVariable Integer id) {
 
