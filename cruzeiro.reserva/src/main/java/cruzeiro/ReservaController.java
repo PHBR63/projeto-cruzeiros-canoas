@@ -31,25 +31,27 @@ public class ReservaController {
 	ReservaDAO dao;
 
 	private JSONObject getCabines() {
-	String uri = "http://localhost:8081/obter";
-	RestTemplate restTemplate = new RestTemplate();
-	String cabine = restTemplate.getForObject(uri, String.class);
-	JSONObject obj = new JSONObject(cabine);
-	return obj;
-	
+		String uri = "http://localhost:8081/obter";
+		RestTemplate restTemplate = new RestTemplate();
+		String cabine = restTemplate.getForObject(uri, String.class);
+		JSONObject obj = new JSONObject(cabine);
+		return obj;
+
 	}
-	
+
 	private ResponseEntity<Iterable<ReservaBean>> obterReservas() {
 		return new ResponseEntity<Iterable<ReservaBean>>(dao.findAll(), HttpStatus.OK);
 	}
-	
-	//Verificar qual a cabine que comporta o total de pessoas (sempre a menor que possa comportar o total de
-	//pessoas requerido) e se não está já reservada na data informada (integrar com o end point Cabine);
-	
+
+	// Verificar qual a cabine que comporta o total de pessoas (sempre a menor que
+	// possa comportar o total de
+	// pessoas requerido) e se não está já reservada na data informada (integrar com
+	// o end point Cabine);
+
 	@GetMapping("/reserva/{totalPessoas}/{data}")
-	public ResponseEntity<String> obterReserva(@PathVariable Integer totalPessoas,
+	public ResponseEntity<Iterable<ReservaBean>> obterReserva(@PathVariable Integer totalPessoas,
 			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date data) {
-		
+
 		JSONObject cabines = getCabines();
 		ResponseEntity<Iterable<ReservaBean>> reservas = obterReservas();
 		
@@ -57,7 +59,6 @@ public class ReservaController {
 		return new ResponseEntity<Iterable<ReservaBean>>(dao.findAll(), HttpStatus.OK);
 	}
 
-	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
