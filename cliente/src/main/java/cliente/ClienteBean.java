@@ -1,9 +1,7 @@
-package Cliente;
+package cliente;
 
-import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 
-@Entity(name = "Cliente")
 public class ClienteBean {
 	
 	@NotNull (message = "Informe o nome do Cliente.")
