@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Service
 public class FaturaConsumer {
 	
@@ -20,13 +24,16 @@ public class FaturaConsumer {
 	private static final Logger log = LoggerFactory.getLogger(FaturaConsumer.class);
 	
 	@KafkaListener(topics = "${topic.name.consumer}", groupId = "group_id")
-	public void consume(ConsumerRecord<String, String> payload){
+	public void consume(ConsumerRecord<String, String> payload) throws JsonMappingException, JsonProcessingException{
 		log.info("Tópico: {}", topicName);
 		log.info("key: {}", payload.key());
 		log.info("Headers: {}", payload.headers());
 		log.info("Partion: {}", payload.partition());
 		log.info("Valor: {}", payload.value());
 		
-		ctrl.emitirFatura(null);
+		ObjectMapper mapper = new ObjectMapper();
+		FaturaBean fatura = mapper.readValue(payload.value(), FaturaBean.class);
+		
+		ctrl.emitirFatura(fatura);
 	}
 }
