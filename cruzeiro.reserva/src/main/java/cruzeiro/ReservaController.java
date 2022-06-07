@@ -1,9 +1,11 @@
 package cruzeiro;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,11 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-
-import cruzeiro.cabines.CabineBean;
-
-import org.json.JSONObject;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
 
 @RestController
 public class ReservaController {
@@ -30,33 +28,76 @@ public class ReservaController {
 	@Autowired
 	ReservaDAO dao;
 
-	private JSONObject getCabines() {
-		String uri = "http://localhost:8081/obter";
-		RestTemplate restTemplate = new RestTemplate();
-		String cabine = restTemplate.getForObject(uri, String.class);
-		JSONObject obj = new JSONObject(cabine);
-		return obj;
+	@Autowired
+	ReservaProducer producer;
 
+	@Autowired
+	private CruzeiroCabineProxy cabine;
+
+	@GetMapping("/obterCabines")
+	private ResponseEntity<Iterable<CabineBean>> getCabines() {
+		try {
+			ResponseEntity<Iterable<CabineBean>> cabines = cabine.getCabines();
+			return new ResponseEntity<Iterable<CabineBean>>(cabines.getBody(), HttpStatus.OK);
+		} catch (BadRequest e) {
+			return new ResponseEntity<Iterable<CabineBean>>(HttpStatus.BAD_REQUEST);
+		}
 	}
 
-	private ResponseEntity<Iterable<ReservaBean>> obterReservas() {
+	@GetMapping("/teste")
+	public ResponseEntity<Iterable<ReservaBean>> reservas() {
 		return new ResponseEntity<Iterable<ReservaBean>>(dao.findAll(), HttpStatus.OK);
 	}
 
-	// Verificar qual a cabine que comporta o total de pessoas (sempre a menor que
-	// possa comportar o total de
-	// pessoas requerido) e se não está já reservada na data informada (integrar com
-	// o end point Cabine);
+	private Iterable<ReservaBean> obterReservas() {
+		return dao.findAll();
+	}
 
 	@GetMapping("/reserva/{totalPessoas}/{data}")
-	public ResponseEntity<Iterable<ReservaBean>> obterReserva(@PathVariable Integer totalPessoas,
-			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date data) {
+	public ResponseEntity<String> obterReserva(@PathVariable Integer totalPessoas,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @PathVariable LocalDate data) {
 
-		JSONObject cabines = getCabines();
-		ResponseEntity<Iterable<ReservaBean>> reservas = obterReservas();
-		
-		
-		return new ResponseEntity<Iterable<ReservaBean>>(dao.findAll(), HttpStatus.OK);
+		System.out.println("---> " + data);
+
+		Iterable<CabineBean> cabines = getCabines().getBody();
+		Iterable<ReservaBean> reservas = obterReservas();
+
+		ArrayList<Integer> reservados = new ArrayList<Integer>();
+
+		for (ReservaBean reservado : reservas) {
+			if (reservado.getData().compareTo(data) == 0) {
+				reservados.add(reservado.getIdCabine());
+			}
+
+		}
+		System.out.println(reservados.toString());
+		CabineBean reservar = null;
+		for (CabineBean cabine : cabines) {
+			if (!reservados.contains(cabine.getIdCabine())) {
+				if (cabine.getMaxPessoas() >= totalPessoas) {
+					if (reservar == null || cabine.getMaxPessoas() < reservar.getMaxPessoas()) {
+						reservar = cabine;
+					}
+				}
+			}
+		}
+
+		if (reservar != null) {
+			ReservaBean dadoReserva = new ReservaBean();
+			dadoReserva.setIdCabine(reservar.getIdCabine());
+			dadoReserva.setData(data);
+			dadoReserva.setTotalPessoas(totalPessoas);
+
+			dao.save(dadoReserva);
+
+			JSONObject jsonObject = new JSONObject(dadoReserva);
+			String msg = jsonObject.toString();
+
+			System.out.println(msg);
+			producer.enviar(msg);
+			return new ResponseEntity<>(HttpStatus.OK);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

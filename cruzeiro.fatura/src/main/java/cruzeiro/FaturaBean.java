@@ -18,7 +18,7 @@ public class FaturaBean {
 	private int id;
 	
 	@NotNull (message = "Informe o id da cabine reservada.")
-	private String idCabine;
+	private int idCabine;
 	
 	@NotNull (message = "Informe a data de reserva.")
 	private Date dataFatura;
@@ -31,7 +31,7 @@ public class FaturaBean {
 		super();
 	}
 	
-	public FaturaBean(int id, String idCabine, Date dataFatura, double total) {
+	public FaturaBean(int id, int idCabine, Date dataFatura, double total) {
 		super();
 		this.id = id;
 		this.idCabine = idCabine;
@@ -47,11 +47,11 @@ public class FaturaBean {
 		this.id = id;
 	}
 
-	public String getIdCabine() {
+	public int getIdCabine() {
 		return idCabine;
 	}
 
-	public void setIdCabine(String idCabine) {
+	public void setIdCabine(int idCabine) {
 		this.idCabine = idCabine;
 	}
 
