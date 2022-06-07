@@ -90,11 +90,11 @@ public class ReservaController {
 
 			dao.save(dadoReserva);
 
-			JSONObject jsonObject = new JSONObject(dadoReserva);
-			String msg = jsonObject.toString();
+//			JSONObject jsonObject = new JSONObject(dadoReserva);
+//			String msg = jsonObject.toString();
 
-			System.out.println(msg);
-			producer.enviar(msg);
+//			System.out.println(msg);
+//			producer.enviar(msg);
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
